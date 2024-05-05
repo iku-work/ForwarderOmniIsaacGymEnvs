@@ -1,0 +1,314 @@
+<robot name="onshape">
+<link name="base_link">
+<visual>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="meshes/base_link.stl"/>
+</geometry>
+<material name="base_link_material">
+<color rgba="0.19607843137254901689 0.43921568627450979783 0.078431372549019606755 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 0 0" rpy="0 -0 0" />
+<geometry>
+<mesh filename="meshes/base_link.stl"/>
+</geometry>
+</collision>
+<inertial>
+<origin xyz="-0.0038912060641234833512 0.94417835578650055606 0.70159558953869916031" rpy="0 0 0"/>
+<mass value="1499.9999999999997726" />
+<inertia ixx="3977.7105991589519363" ixy="2.4359446062356151508"  ixz="-0.23812520616688842567" iyy="879.4116239375675832" iyz="164.77461570684363323" izz="4496.6843394325978807" />
+</inertial>
+</link>
+
+<link name="cranepillar">
+<visual>
+<origin xyz="6.9388939039072283776e-18 -1.9750000000000000888 1.8000000000000002665" rpy="-3.141592653589793116 -0 -3.7073143176218130391e-18" />
+<geometry>
+<mesh filename="meshes/cranepillar.stl"/>
+</geometry>
+<material name="cranepillar_material">
+<color rgba="0.98039215686274505668 0.71372549019607844922 0.0039215686274509803377 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="6.9388939039072283776e-18 -1.9750000000000000888 1.8000000000000002665" rpy="-3.141592653589793116 -0 -3.7073143176218130391e-18" />
+<geometry>
+<mesh filename="meshes/cranepillar.stl"/>
+</geometry>
+</collision>
+<inertial>
+<origin xyz="6.5177737211837026014e-08 0.06999606518921241971 -0.40871146584034473426" rpy="0 0 0"/>
+<mass value="158.26819918446108204" />
+<inertia ixx="20.304254714215378641" ixy="3.9605699780622984006e-06"  ixz="-8.1723973262745999604e-07" iyy="19.504224403354101014" iyz="3.0542376148195296004" izz="2.5286420750194498197" />
+</inertial>
+</link>
+
+<link name="cranearm">
+<visual>
+<origin xyz="2.1631691341646703819 2.9071014878752601263 0.10714734974687092905" rpy="1.570796326794896558 1.5707963267948961139 0" />
+<geometry>
+<mesh filename="meshes/cranearm.stl"/>
+</geometry>
+<material name="cranearm_material">
+<color rgba="0.98039215686274505668 0.71372549019607844922 0.0039215686274509803377 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="2.1631691341646703819 2.9071014878752601263 0.10714734974687092905" rpy="1.570796326794896558 1.5707963267948961139 0" />
+<geometry>
+<mesh filename="meshes/cranearm.stl"/>
+</geometry>
+</collision>
+<inertial>
+<origin xyz="1.4710758781849477828 -0.83447497357367250714 0.11000015269846498411" rpy="0 0 0"/>
+<mass value="171.36007144775490474" />
+<inertia ixx="31.17440380926048249" ixy="53.72154790670983715"  ixz="-2.3471090234412882384e-06" iyy="103.78227622883765946" iyz="2.9687502947118911292e-06" izz="132.11938151457616186" />
+</inertial>
+</link>
+
+<link name="extension_arm">
+<visual>
+<origin xyz="-0.088447174187276544899 -5.3839193952782471442 -0.067147349746820766958" rpy="-1.570796326794896558 -1.5707963267948796826 0" />
+<geometry>
+<mesh filename="meshes/extension_arm.stl"/>
+</geometry>
+<material name="extension_arm_material">
+<color rgba="0.98039215686274505668 0.71372549019607844922 0.0039215686274509803377 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="-0.088447174187276544899 -5.3839193952782471442 -0.067147349746820766958" rpy="-1.570796326794896558 -1.5707963267948796826 0" />
+<geometry>
+<mesh filename="meshes/extension_arm.stl"/>
+</geometry>
+</collision>
+<inertial>
+<origin xyz="0.71945517939019365539 0.12523230339913293818 -0.10999999999999976463" rpy="0 0 0"/>
+<mass value="132.70502483158338691" />
+<inertia ixx="8.0714226307109147029" ixy="18.156198033664058045"  ixz="1.0923177693777059461e-14" iyy="63.582628627999874027" iyz="2.9882967155716166814e-14" izz="70.212133412085975692" />
+</inertial>
+</link>
+
+<link name="extension">
+<visual>
+<origin xyz="0.097852650417088363199 5.3847096770111537722 1.5927817167852036384" rpy="1.8759826062349289622 -5.9218368801835195858e-15 2.5089115897672376043e-18" />
+<geometry>
+<mesh filename="meshes/extension.stl"/>
+</geometry>
+<material name="extension_material">
+<color rgba="0.98039215686274505668 0.71372549019607844922 0.0039215686274509803377 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0.097852650417088363199 5.3847096770111537722 1.5927817167852036384" rpy="1.8759826062349289622 -5.9218368801835195858e-15 2.5089115897672376043e-18" />
+<geometry>
+<mesh filename="meshes/extension.stl"/>
+</geometry>
+</collision>
+<inertial>
+<origin xyz="0.055000000489328113029 -0.11308667092188251502 1.1835917326395082316" rpy="0 0 0"/>
+<mass value="74.483829935135773326" />
+<inertia ixx="35.990982829721382075" ixy="2.8883683342325816887e-10"  ixz="4.533294245971143494e-09" iyy="35.493371181524146607" iyz="-0.96498947282822022942" izz="0.92591432257180250609" />
+</inertial>
+</link>
+
+<link name="intermediatehookjnt">
+<visual>
+<origin xyz="1.1629408158115603911 -1.6924602990154093973 0.05999999999999999778" rpy="-1.570796326794896558 -1.570796326794896558 0" />
+<geometry>
+<mesh filename="meshes/intermediatehookjnt.stl"/>
+</geometry>
+<material name="intermediatehookjnt_material">
+<color rgba="0.98039215686274505668 0.71372549019607844922 0.0039215686274509803377 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="1.1629408158115603911 -1.6924602990154093973 0.05999999999999999778" rpy="-1.570796326794896558 -1.570796326794896558 0" />
+<geometry>
+<mesh filename="meshes/intermediatehookjnt.stl"/>
+</geometry>
+</collision>
+<inertial>
+<origin xyz="7.2130032402271055899e-08 -0.12159167084693889294 0.059999999999999949207" rpy="0 0 0"/>
+<mass value="6.6927523972674238806" />
+<inertia ixx="0.072021619002840306378" ixy="2.6246446781981169744e-08"  ixz="-2.9497402831450690525e-19" iyy="0.032102433616367886948" iyz="-1.3138598449676532376e-21" izz="0.063250708421585463692" />
+</inertial>
+</link>
+
+<link name="grapplehook">
+<visual>
+<origin xyz="0 1.4599999999999995204 1.1229409087543595902" rpy="1.570796326794896558 3.9031278209478159624e-18 -1.3877787807814456755e-17" />
+<geometry>
+<mesh filename="meshes/grapplehook.stl"/>
+</geometry>
+<material name="grapplehook_material">
+<color rgba="0.98039215686274505668 0.71372549019607844922 0.0039215686274509803377 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0 1.4599999999999995204 1.1229409087543595902" rpy="1.570796326794896558 3.9031278209478159624e-18 -1.3877787807814456755e-17" />
+<geometry>
+<mesh filename="meshes/grapplehook.stl"/>
+</geometry>
+</collision>
+<inertial>
+<origin xyz="-1.8348013932342325104e-17 0.11889435836171968752 -0.040000000000000257572" rpy="0 0 0"/>
+<mass value="11.69137300060207707" />
+<inertia ixx="0.071283575399172724452" ixy="-3.6772265021772523759e-19"  ixz="-1.1033426387914104454e-19" iyy="0.044786365951232906535" iyz="5.3726285580160428126e-19" izz="0.077427737510019634115" />
+</inertial>
+</link>
+
+<link name="grapplebody">
+<visual>
+<origin xyz="0.0028526502531289743558 -4.2941082490610078537 0.31050192853763558531" rpy="-0.83507352101469434213 8.7430063189231077558e-16 7.8062556418956319249e-18" />
+<geometry>
+<mesh filename="meshes/grapplebody.stl"/>
+</geometry>
+<material name="grapplebody_material">
+<color rgba="0 0 0 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0.0028526502531289743558 -4.2941082490610078537 0.31050192853763558531" rpy="-0.83507352101469434213 8.7430063189231077558e-16 7.8062556418956319249e-18" />
+<geometry>
+<mesh filename="meshes/grapplebody.stl"/>
+</geometry>
+</collision>
+<inertial>
+<origin xyz="-0.0046191934757202676026 -8.4376949871511897072e-15 -0.14258886664155778767" rpy="0 0 0"/>
+<mass value="100.00000000000024158" />
+<inertia ixx="2.2032827057151176398" ixy="3.0106125925577487124e-14"  ixz="-0.014403165349775932935" iyy="5.1544932520305444257" iyz="-1.6875389974302379414e-14" izz="5.922980580194753486" />
+</inertial>
+</link>
+
+<link name="grappler">
+<visual>
+<origin xyz="0.32285265025312526177 -3.400511222977983028 -3.1245452734591512289" rpy="0.00036507366005568290049 4.3107878378023666157e-16 0" />
+<geometry>
+<mesh filename="meshes/grappler.stl"/>
+</geometry>
+<material name="grappler_material">
+<color rgba="0.98039215686274505668 0.71372549019607844922 0.0039215686274509803377 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="0.32285265025312526177 -3.400511222977983028 -3.1245452734591512289" rpy="0.00036507366005568290049 4.3107878378023666157e-16 0" />
+<geometry>
+<mesh filename="meshes/grappler.stl"/>
+</geometry>
+</collision>
+<inertial>
+<origin xyz="-0.09470528406181727421 0.096639041820777996095 0.15598163605192150172" rpy="0 0 0"/>
+<mass value="40.000000000000156319" />
+<inertia ixx="5.3423877759080875549" ixy="0.72179632350094391491"  ixz="-0.025060421574980885212" iyy="3.7878510405007674855" iyz="0.073688762114945488557" izz="2.5553459620399516794" />
+</inertial>
+</link>
+
+<joint name="Revolute 7" type="revolute">
+<origin xyz="-0.2799999999999998046 -0.14999999999999880096 -0.17376999257947023381" rpy="-1.570796326794896558 -0.01738299423656019041 2.1340322859880885858e-15" />
+<parent link="grapplebody" />
+<child link="grappler" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<link name="grapplel">
+<visual>
+<origin xyz="-0.23714734974687301516 3.4005112229779799193 3.4295452734591544974" rpy="-3.1412275799297373347 -4.354155924701785807e-16 0" />
+<geometry>
+<mesh filename="meshes/grapplel.stl"/>
+</geometry>
+<material name="grapplel_material">
+<color rgba="0.98039215686274505668 0.71372549019607844922 0.0039215686274509803377 1.0"/>
+</material>
+</visual>
+<collision>
+<origin xyz="-0.23714734974687301516 3.4005112229779799193 3.4295452734591544974" rpy="-3.1412275799297373347 -4.354155924701785807e-16 0" />
+<geometry>
+<mesh filename="meshes/grapplel.stl"/>
+</geometry>
+</collision>
+<inertial>
+<origin xyz="0.092881446788631361056 -0.092413330464415827104 0.14248893299358122988" rpy="0 0 0"/>
+<mass value="39.999999999999864997" />
+<inertia ixx="5.0920933844195550577" ixy="0.69460177719860105583"  ixz="-0.03092010535279316602" iyy="3.6648340684150024771" iyz="0.089352483439993607428" izz="2.3865479291955042918" />
+</inertial>
+</link>
+
+<joint name="Revolute 8" type="revolute">
+<origin xyz="0.2799999999999998046 0.14999999999999447109 -0.17376999257946668109" rpy="1.570796326794896558 0.1453176319688674889 -5.4857699884642518994e-15" />
+<parent link="grapplebody" />
+<child link="grapplel" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="Revolute 6" type="revolute">
+<origin xyz="-7.2164496600635175128e-16 0.21499987652526941773 -0.040000000000000479616" rpy="-1.570796326794896558 -1.4928260706585001483 -3.141592653589713624" />
+<parent link="grapplehook" />
+<child link="grapplebody" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="Revolute 5" type="revolute">
+<origin xyz="0.039999907057200800864 -0.23246029901541032103 0.06000000000000018513" rpy="1.5707963267948958919 -1.4892660336601413196 1.5707963267948008568" />
+<parent link="intermediatehookjnt" />
+<child link="grapplehook" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="Revolute 4" type="revolute">
+<origin xyz="-0.0049999998361774135314 -0.00046421498846971331886 2.3755713282784665097" rpy="-1.570796326794896336 -0.99949757892231594347 -1.570796326794916542" />
+<parent link="extension" />
+<child link="intermediatehookjnt" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="Slider 1" type="prismatic">
+<origin xyz="0.48354750494674036965 0.065746132359925546496 -0.18000000000000249134" rpy="2.836406374149756271 -1.5707963267948803487 0" />
+<parent link="extension_arm" />
+<child link="extension" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" lower="-1.5" upper="0"/>
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="Revolute 3" type="revolute">
+<origin xyz="2.969203948016692074 -1.5997177007333576171 -5.5511151231257827021e-17" rpy="3.1415926535897926719 2.2650148053525044887e-15 0.68079060692433990276" />
+<parent link="cranearm" />
+<child link="extension_arm" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="Revolute 2" type="revolute">
+<origin xyz="0.10999999999999995892 0.17500000000000093259 -1.1000000000000005329" rpy="1.570796326794896558 0.4623144811446134872 -1.5707963267948954478" />
+<parent link="cranepillar" />
+<child link="cranearm" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+<joint name="Revolute 1" type="revolute">
+<origin xyz="-0.002852650253180433193 -1.9808771680306496155 1.7659041313870400547" rpy="3.1412277245322228758 -1.027424970081609518e-05 -0.028146664935383040179" />
+<parent link="base_link" />
+<child link="cranepillar" />
+<axis xyz="0 0 1"/>
+<limit effort="1" velocity="20" />
+<joint_properties friction="0.0"/>
+</joint>
+
+
+</robot>

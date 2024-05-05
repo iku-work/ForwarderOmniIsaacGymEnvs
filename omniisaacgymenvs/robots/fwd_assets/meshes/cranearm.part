@@ -1,0 +1,13 @@
+{
+    "configuration": "default",
+    "documentId": "536b3e3db0c31fb197f11561",
+    "documentMicroversion": "42e3030e8dcad232ff522c04",
+    "elementId": "2d38fb62bb4bd2ab83882b85",
+    "fullConfiguration": "default",
+    "id": "MOnzAKu6ZHzaagUzK",
+    "isStandardContent": false,
+    "name": "craneArm <1>",
+    "partId": "JFj",
+    "suppressed": false,
+    "type": "Part"
+}
