@@ -6,4 +6,5 @@ Author: NVIDIA
 Keywords: robotics,rl
 Classifier: Natural Language :: English
 Classifier: Programming Language :: Python :: 3.7, 3.8
+License-File: LICENSE
 License-File: LICENSE.txt

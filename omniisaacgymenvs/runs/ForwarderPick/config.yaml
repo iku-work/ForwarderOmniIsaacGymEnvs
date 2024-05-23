@@ -12,10 +12,10 @@ rl_device: cuda:0
 multi_gpu: false
 num_threads: 4
 solver_type: 1
-test: true
-checkpoint: /home/rl/OmniIsaacGymEnvs/omniisaacgymenvs/runs/ForwarderPick/nn/ForwarderPick.pth
+test: false
+checkpoint: ''
 evaluation: false
-headless: false
+headless: true
 enable_livestream: false
 mt_timeout: 300
 enable_recording: false
@@ -54,9 +54,9 @@ task:
     - 21
     - 21
     woodLiftScale: 3.5
-    grappleToWoodDistScale: 100
+    grappleToWoodDistScale: 10
     woodToUnloadingPointDistScale: 100
-    woodToTargetDistScale: 1000
+    woodToTargetDistScale: 20
     kps:
     - 5000000.0
     - 5000000.0
@@ -104,7 +104,7 @@ task:
     physx:
       use_gpu: ${eq:${....sim_device},"gpu"}
       worker_thread_count: ${....num_threads}
-      solver_type: 1
+      solver_type: 0
       bounce_threshold_velocity: 0.2
       friction_offset_threshold: 0.04
       friction_correlation_distance: 0.025
@@ -189,7 +189,7 @@ train:
       save_frequency: 100
       print_stats: true
       grad_norm: 1.0
-      entropy_coef: 0.0
+      entropy_coef: 0.001
       truncate_grads: true
       e_clip: 0.2
       horizon_length: 32

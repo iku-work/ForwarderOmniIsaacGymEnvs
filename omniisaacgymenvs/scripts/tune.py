@@ -5,7 +5,7 @@ import tensorflow as tf
 import numpy as np
 
 
-path_to_file = '/home/rl/OmniIsaacGymEnvs/omniisaacgymenvs/scripts/rlgames_train.py'
+path_to_file = '/home/rl/ForwarderOmniIsaacGymEnvs/omniisaacgymenvs/scripts/rlgames_train.py'
 
 
 
@@ -14,7 +14,7 @@ python_path = '/home/rl/.local/share/ov/pkg/isaac_sim-2023.1.1/python.sh'
 
 n_trials=300
 
-max_iter = 300
+max_iter = 500
 
 r0_scale_min=1
 r0_scale_max=15
@@ -64,7 +64,7 @@ def objective(trial):
     os.system(command=command)
     #print(result)
     
-    path_to_log_folder = '/home/rl/OmniIsaacGymEnvs/omniisaacgymenvs/runs/{}/summaries'.format(experiment_name)
+    path_to_log_folder = '/home/rl/ForwarderOmniIsaacGymEnvs/omniisaacgymenvs/runs/{}/summaries'.format(experiment_name)
 
     event_acc = EventAccumulator(path_to_log_folder)
     event_acc.Reload()

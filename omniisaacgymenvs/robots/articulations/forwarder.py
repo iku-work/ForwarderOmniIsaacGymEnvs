@@ -9,6 +9,8 @@ from omniisaacgymenvs.tasks.utils.usd_utils import set_drive
 
 from omni.isaac.core.utils.prims import get_prim_at_path
 from pxr import PhysxSchema
+import pathlib
+
 
 class Forwarder(Robot):
     def __init__(
@@ -34,8 +36,14 @@ class Forwarder(Robot):
                 carb.log_error("Could not find Isaac Sim assets folder")
             self._usd_path = assets_root_path + "/Isaac/Robots/Franka/franka_instanceable.usd"
         print('================= USD PATH', self._usd_path)'''
+
+
+
         self._usd_path =  '/home/rl/Documents/forwarder_description/forwarder.usd'
-        self._usd_path =  '/home/rl/OmniIsaacGymEnvs/omniisaacgymenvs/robots/fwd_assets/forwarder.usd'
+        print("========================",str(pathlib.Path(__file__).parent.resolve().parent/'fwd_assets/forwarder.usd'))
+        self._usd_path = str(pathlib.Path(__file__).parent.resolve().parent/'fwd_assets/forwarder.usd')
+        #(pathlib.Path(__file__).parent.resolve().parent).joinpath('fwd_assets/forwarder.usd')
+
         add_reference_to_stage(self._usd_path, prim_path)
         
         super().__init__(
@@ -96,16 +104,16 @@ class Forwarder(Robot):
         max_force =    [5e5, 5e5, 5e5, 5e3,        5e3,5e3,        5e5,5e7,5e7]#5e7,5e7]
         max_velocity = [500,500,500,500,500,  500,500,  1000,1000]
         '''
-        stiffness =    [10000000.0,10000000.0, 10000000.0, 10000000.0,          0, 0       ,10000000.0, 10000000.0, 10000000.0]
+        stiffness =    [10000000.0,10000000.0, 10000000.0, 10000000.0,          0, 0       ,10000000.0, 100000000.0, 100000000.0]
         damping =      [100000.0,  100000.0,   100000.0,   100000.0,          0, 0          ,100000.0,  100000.0,   100000.0]
         
         # VALUE: 6500
         #max_velocity = [30,30,30,40,                 500,500,    200,200,200]
         # VALUE: 180748
         #max_velocity = [30,30,30,10,                 500,500,    200,200,200]
-        max_velocity = [10,10,10,3,                 500,500,    50,50,50]
+        max_velocity = [15,15,15,2,                 500,500,    50,50,50]
         #max_force  =  [50000.0,500000.0,80000.0,2000.0,                    0,0,           10000.0,10000.0,10000.0]
-        max_force  =   [5e5,5e5,2e5,5e5,              0,0,   1e5, 5e5,5e5]
+        max_force  =   [8e5,5e5,5e5,5e3,              0,0,   5e5, 5e6,5e6]
         #max_force  =   [5e5,5e6,2e6,5e5,            1e20,1e20,   1e5, 5e4,5e4]
         
 

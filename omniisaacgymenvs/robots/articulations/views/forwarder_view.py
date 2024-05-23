@@ -30,6 +30,7 @@ class ForwarderView(ArticulationView):
     def initialize(self, physics_sim_view):
         super().initialize(physics_sim_view)
 
+        
         #self._gripper_indices = [self.get_dof_index("grappleL1"), self.get_dof_index("grappleR1")]
         
     @property

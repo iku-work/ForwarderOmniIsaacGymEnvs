@@ -4,6 +4,7 @@ from omni.isaac.core.robots.robot import Robot
 from omni.isaac.core.utils.nucleus import get_assets_root_path
 from omni.isaac.core.utils.stage import add_reference_to_stage
 from omniisaacgymenvs.tasks.utils.usd_utils import set_drive
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -29,6 +30,7 @@ class Wood(Robot):
                 carb.log_error("Could not find Isaac Sim assets folder")
             self._usd_path = assets_root_path + "/Isaac/Props/Sektion_Cabinet/sektion_cabinet_instanceable.usd"'''
         self._usd_path = '/home/rl/Documents/forwarder_description/wood.usd'
+        self._usd_path = str(Path(__file__).parent.resolve().parent/'fwd_assets/wood.usd')
 
         add_reference_to_stage(self._usd_path, prim_path)
 

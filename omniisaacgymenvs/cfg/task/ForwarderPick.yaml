@@ -31,8 +31,8 @@ env:
   #actionScale: [11, 6, 13, 20, 56, 74, 74]
   actionScale: [4, 7, 10, 16, 41, 21, 21]
   woodLiftScale: 3.5
-  grappleToWoodDistScale: 100
-  woodToUnloadingPointDistScale: 10
+  grappleToWoodDistScale: 10
+  woodToUnloadingPointDistScale: 100
   woodToTargetDistScale: 20
  
   kps:    [5e6,5e6,5e6,5e6,5e6,5e6,5e6]
@@ -67,7 +67,7 @@ sim:
   physx:
     use_gpu: ${eq:${....sim_device},"gpu"} # set to False to run on CPU
     worker_thread_count: ${....num_threads}
-    solver_type: 1 #${....solver_type} # 0: PGS, 1: TGS
+    solver_type: 0 #${....solver_type} # 0: PGS, 1: TGS
     bounce_threshold_velocity: 0.2
     friction_offset_threshold: 0.04
     friction_correlation_distance: 0.025

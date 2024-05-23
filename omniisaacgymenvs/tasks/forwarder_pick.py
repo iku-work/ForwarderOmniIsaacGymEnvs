@@ -8,6 +8,7 @@ from omni.isaac.core.articulations import ArticulationView
 from omni.isaac.core.utils.prims import get_prim_at_path
 from omni.isaac.core.utils.stage import get_current_stage
 from omni.isaac.core.objects import DynamicCapsule, DynamicSphere
+from omni.isaac.core.materials import PhysicsMaterial
 from omni.isaac.core.prims import RigidPrimView
 from omni.isaac.core.utils.rotations import *
 
@@ -88,7 +89,7 @@ class ForwarderPickTask(RLTask):
         self.force = self._task_cfg["env"]["force"]
         
         self._forwarder_positions = torch.tensor([0.0, 0.0, 0.1])
-        self._wood_positions = torch.tensor([5.0,  -2.0,   0.3])        
+        self._wood_positions = torch.tensor([5.0,  -2.0,   4])        
 
         self._num_observations = 56 #41#35
         self._num_actions = 6
@@ -112,6 +113,7 @@ class ForwarderPickTask(RLTask):
         scene.add(self._fwds._base_link)
 
         self._woods = RigidPrimView(prim_paths_expr="/World/envs/.*/wood/base_link", name="wood_view", reset_xform_properties=False)        
+        #self._woods = RigidPrimView(prim_paths_expr="/World/envs/.*/wood", name="wood_view", reset_xform_properties=False) 
         scene.add(self._woods)
 
         self.fwd_default_dof_pos = torch.tensor(
@@ -153,7 +155,27 @@ class ForwarderPickTask(RLTask):
         self._sim_config.apply_articulation_settings("forwarder", get_prim_at_path(fwd.prim_path), fwd_config)
 
     def get_wood(self):
+        
+        
+        '''wood = DynamicCapsule(    
+            prim_path= self.default_zero_env_path +  "/wood", 
+            name='wood',
+            translation=self._wood_positions,
+            orientation=axisangle2quat(torch.tensor([0,.0,.0], device=self._device)),
+            radius=0.3,
+            height=4.0,
+            color=np.array([0.0, 1.0, 0.0]),
+            mass=100.0
+            )
+        material = PhysicsMaterial(
+        prim_path="/World/physics_material/wood",  # path to the material prim to create
+        dynamic_friction=0.4,
+        static_friction=1.1,
+        restitution=0.1
+        )'''
+
         wood = Wood(prim_path=self.default_zero_env_path + "/wood", name="wood", translation=self._wood_positions)
+        #wood.apply_physics_material(material)
         self._sim_config.apply_articulation_settings("wood", get_prim_at_path(wood.prim_path), self._sim_config.parse_actor_config("wood"))
     
 
@@ -237,7 +259,7 @@ class ForwarderPickTask(RLTask):
         self.actions[:,0:4] = actions[:,0:4]
         self.actions[:,4] = actions[:,4]
         self.actions[:,5] = actions[:,5]
-        self.actions[:, 6] = actions[:,5]
+        self.actions[:, 6] = -actions[:,5]
         
         #self.action_scale = 2.5
 
@@ -343,8 +365,8 @@ class ForwarderPickTask(RLTask):
 
         wood_rot_euler = torch.zeros((num_resets, 3), device=self._device)
         wood_rot_euler[:, 2] = rand_angle.squeeze()
+        wood_rot_euler = torch.tensor([0.0,1.58,0.0], device=self._device).clone().repeat((num_resets,1))
         wood_rot = axisangle2quat(wood_rot_euler)
-        
         wood_velocities = torch.zeros((num_resets, 6), device=self._device)
 
         #self.fwd_dof_targets = pos.detach().clone()
@@ -569,12 +591,12 @@ class ForwarderPickTask(RLTask):
         dist_wood_2_unloading = torch.norm(self.unloading_pos-self.wood_pos, p=2, dim=-1)
         wood_2_unload_reward = 1 / (1.0 + dist_wood_2_unloading  ** 3) 
 
-        lift_n_unloadDist_reward = self.wood_lifted *  (v_2_unload_reward + wood_2_unload_reward) * (1+dot3) * self.wood_2_unloading_dist_scale * self.woodToTargetDistScale
-        
+        #lift_n_unloadDist_reward = self.wood_lifted *  (v_2_unload_reward + wood_2_unload_reward) * (1+dot3) * self.wood_2_unloading_dist_scale * self.woodToTargetDistScale
+        lift_n_unloadDist_reward = self.wood_lifted *  (wood_2_unload_reward) * (1+dot3) * self.wood_2_unloading_dist_scale 
 
         # ==================== new partStage 3
         wood_2_target_dist = torch.norm(self.target_pos-self.wood_pos, p=2, dim=-1)
-        close_2_unload = torch.where(h_dist_wood_2_unloading < .2, 1, 0)
+        close_2_unload = torch.where(h_dist_wood_2_unloading < 1, 1, 0)
         wood_2_target_reward = (1 / (1. + wood_2_target_dist ** 4)) * self.wood_lifted * close_2_unload * rot_yw_yu_reward
         #print('H close: ', close_2_unload[253].item(), 'W2T reward: ', wood_2_target_reward[253].item()) 
         # ================== new part ends here
@@ -587,10 +609,12 @@ class ForwarderPickTask(RLTask):
         #reward += wood_2_unload_reward * rot_yw_yu_reward
         #reward -= action_penalty 
         reward += lift_n_unloadDist_reward
-        reward += wood_2_target_reward
+        #reward += wood_2_target_reward
         reward -= velocity_penalty
-        print('Reward {}, Wood lifted count: {}'.format(torch.mean(reward).item(), 
-                                                        torch.sum(self.wood_lifted).item()))
+        #print('Reward {}, Wood lifted count: {}'.format(torch.mean(reward).item(), 
+        #                                                torch.sum(self.wood_lifted).item()))
+        #print('Dist2Unloadrew: {}'.format(wood_2_unload_reward[128]))
+        #print('Lift: {}, target: {}'.format(lift_n_unloadDist_reward[128],wood_2_target_reward[128]))
 
         # May be hesitant to move the wood, because side reward is on 
         # and reward is 0 when it is lifted and grapple on wrong side
