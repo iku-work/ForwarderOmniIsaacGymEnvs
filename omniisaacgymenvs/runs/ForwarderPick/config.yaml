@@ -12,10 +12,10 @@ rl_device: cuda:0
 multi_gpu: false
 num_threads: 4
 solver_type: 1
-test: false
-checkpoint: ''
+test: true
+checkpoint: /home/rl/ForwarderOmniIsaacGymEnvs/omniisaacgymenvs/runs/FWD2/nn/FWD2.pth
 evaluation: false
-headless: true
+headless: false
 enable_livestream: false
 mt_timeout: 300
 enable_recording: false

@@ -197,11 +197,13 @@ class ForwarderPickTask(RLTask):
         #self.wood_grasp_r_pos = self._woods._grasp_pos_r.get_world_poses(clone=False)
         #print(self.wood_grasp_l_pos[256,:].item())
 
-        joints_positions = self._fwds.get_joint_positions(clone=False)
-        joints_velocities = self._fwds.get_joint_velocities(clone=False)
+        joint_states = self._fwds.get_joints_state()
+        joints_positions, joints_velocities = joint_states.positions, joint_states.velocities
+        #joints_positions = self._fwds.get_joint_positions(clone=False)
+        #joints_velocities = self._fwds.get_joint_velocities(clone=False)
 
         #print('Joints vel: ',self.joints_velocities[253,:])
-        indices = torch.arange(self._fwds.count, dtype=torch.int32, device=self._device)
+        #indices = torch.arange(self._fwds.count, dtype=torch.int32, device=self._device)
         #vel = self._fwds._grapple_body.get_linear_velocities(indices=indices)
         #print(torch.sqrt(vel[253,0]**2 + vel[253,1]**2 + vel[253,2]**2))
 
@@ -417,7 +419,6 @@ class ForwarderPickTask(RLTask):
 
     def post_reset(self):
 
-        
 
         self.active_dof_upper_limits = torch.zeros((self.num_active_dof), device=self._device)
         self.active_dof_lower_limits = torch.zeros((self.num_active_dof), device=self._device)
@@ -425,20 +426,12 @@ class ForwarderPickTask(RLTask):
 
         self.active_dof_lower_limits[:5] = self.dof_limits[0, :5, 0]
         self.active_dof_lower_limits[4:] = self.dof_limits[0, 6:, 0]
-        #self.active_dof_lower_limits[4] = self.dof_limits[0, 5, 0]
-        #self.active_dof_lower_limits[-2:] = self.dof_limits[0, -2:, 0]
 
         self.active_dof_upper_limits[:4] = self.dof_limits[0, :4, 1]
-        #self.active_dof_upper_limits[4] = self.dof_limits[0, 5, 1]
-        #self.active_dof_upper_limits[-2:] = self.dof_limits[0, -2:, 1]
         self.active_dof_upper_limits[4:] = self.dof_limits[0, 6:, 1]       
-        #print('LL: ', self.fwd_dof_lower_limits)
-        #print('UL: ', self.fwd_dof_upper_limits)
         self.fwd_dof_lower_limits = self. dof_limits[0, :, 0].to(device=self._device)
         self.fwd_dof_upper_limits = self.dof_limits[0, :, 1].to(device=self._device)
 
-
-                
 
 
         '''self.fwd_dof_targets = torch.zeros(
@@ -446,17 +439,7 @@ class ForwarderPickTask(RLTask):
         )'''
         
 
-        #self.fwd_dof_pos = torch.zeros((self.num_envs, self.num_active_dof), device=self._device)
-
-        #self.initial_wood_pos, self.initial_wood_rots = self._woods.get_world_poses() 
-
         self.initial_wood_pos, self.initial_wood_rots = self._woods.get_world_poses(clone=False) 
-        #self.initial_wood_pos[:,0] += 6
-        #self.initial_wood_pos[:,2] +=2
-
-        #self.unloading_pos, unloading_ori = self._unloading_points.get_world_poses()
-        
-        #self.old_dist_wood_2_target = torch.full((self.num_envs,), 20, device=self._device)
 
         self.wood_lifted = torch.zeros((self._num_envs))
         self.wood_lift_count = torch.zeros_like(self.wood_lifted, device=self._device)
@@ -497,6 +480,9 @@ class ForwarderPickTask(RLTask):
         wood_side = torch.sign(wood_rel2_target_pos[:,0])
         self.side_reward = torch.eq(grapple_side, wood_side, out=None)
 
+        wood_dist_z = torch.abs(self.wood_pos[:,2] - self.grapple_body_pos[:,2])  
+
+        '''
         # Offset from CM along Y-axis, where grasp allowed
         wood_grasp_postion_offset = .8
         wood_pos_grasp = self.wood_pos.clone().to(self._device)
@@ -511,7 +497,7 @@ class ForwarderPickTask(RLTask):
 
         wood_dist_x = torch.abs(self.wood_pos[:,0] - self.grapple_body_pos[:,0])
         wood_dist_y = torch.abs(self.wood_pos[:,1] - self.grapple_body_pos[:,1])   
-        wood_dist_z = torch.abs(self.wood_pos[:,2] - self.grapple_body_pos[:,2])  
+        
         #print(self.grapple_body_pos[253,2])
         # Normalize distance
         grapple_l_dist = torch.norm(self.wood_grasp_positions-self.grapple_l_pos.repeat(3,1,1),dim=-1,p=2)
@@ -538,7 +524,7 @@ class ForwarderPickTask(RLTask):
         grapple_l_rew = 1/(1+(torch.min(grapple_l_dist, dim=0).values)**2)
         grapple_r_rew = 1/(1+(torch.min(grapple_r_dist, dim=0).values)**2)
         grapple_body_rew=1/(1+min_body_2_wood_dist**2)
-
+        '''
         
          # Alignment of wood and grapple axes
         dot1 = torch.bmm(axis1.view(self.num_envs, 1, 3), axis2.view(self.num_envs, 3, 1)).squeeze(-1).squeeze(-1)  # alignment of forward axis for gripper
@@ -554,7 +540,7 @@ class ForwarderPickTask(RLTask):
         rot_to_wood_reward = 1 + torch.abs(dot1) * 0.5 * rot_reward_scale
         # Grapple closing reward
 
-        rot_to_z_reward = 1 + torch.abs(dot2) * rot_reward_scale
+        #rot_to_z_reward = 1 + torch.abs(dot2) * rot_reward_scale
 
         rot_yw_yu_reward = 1 + torch.abs(dot3) * rot_reward_scale
 
@@ -584,15 +570,15 @@ class ForwarderPickTask(RLTask):
         v_2_unload_reward = 1 / (1 + v_dist_wood_2_unloading ** 2)
 
         h_dist_wood_2_unloading = torch.norm(self.unloading_pos[:,:2]-self.wood_pos[:,:2], p=2, dim=-1).flatten()
-        x_dist_wood_2_unloading = torch.abs(self.unloading_pos[:,0]-self.wood_pos[:,0]).flatten()
-        x_2_unload_reward = 1.0 / (1.0 + x_dist_wood_2_unloading ** 2)
-        h_2_unload_reward = 1.0 / (1.0 + h_dist_wood_2_unloading ** 2) * self.wood_2_unloading_dist_scale
+        #x_dist_wood_2_unloading = torch.abs(self.unloading_pos[:,0]-self.wood_pos[:,0]).flatten()
+        #x_2_unload_reward = 1.0 / (1.0 + x_dist_wood_2_unloading ** 2)
+        h_2_unload_reward = 1.0 / (1.0 + h_dist_wood_2_unloading ** 2)
 
         dist_wood_2_unloading = torch.norm(self.unloading_pos-self.wood_pos, p=2, dim=-1)
-        wood_2_unload_reward = 1 / (1.0 + dist_wood_2_unloading  ** 3) 
+        #wood_2_unload_reward = 1 / (1.0 + dist_wood_2_unloading  ** 3) 
 
-        #lift_n_unloadDist_reward = self.wood_lifted *  (v_2_unload_reward + wood_2_unload_reward) * (1+dot3) * self.wood_2_unloading_dist_scale * self.woodToTargetDistScale
-        lift_n_unloadDist_reward = self.wood_lifted *  (wood_2_unload_reward) * (1+dot3) * self.wood_2_unloading_dist_scale 
+        lift_n_unloadDist_reward = self.wood_lifted *  (v_2_unload_reward) * (1+dot3) * self.wood_2_unloading_dist_scale 
+        lift_n_unloadDist_reward = torch.where(v_dist_wood_2_unloading < .5, lift_n_unloadDist_reward, lift_n_unloadDist_reward+h_2_unload_reward*(1+dot3)*self.wood_2_unloading_dist_scale)
 
         # ==================== new partStage 3
         wood_2_target_dist = torch.norm(self.target_pos-self.wood_pos, p=2, dim=-1)
@@ -605,7 +591,8 @@ class ForwarderPickTask(RLTask):
         velocity_penalty = torch.abs(torch.sum(self.grapple_body_vel, dim=-1)) * 1e-3
         #action_penalty = torch.sum(self.actions ** 2, dim=-1) * 1e-5
         
-        
+
+
         #reward += wood_2_unload_reward * rot_yw_yu_reward
         #reward -= action_penalty 
         reward += lift_n_unloadDist_reward
