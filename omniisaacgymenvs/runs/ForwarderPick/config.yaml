@@ -12,10 +12,10 @@ rl_device: cuda:0
 multi_gpu: false
 num_threads: 4
 solver_type: 1
-test: true
-checkpoint: /home/rl/ForwarderOmniIsaacGymEnvs/omniisaacgymenvs/runs/FWD2/nn/FWD2.pth
+test: false
+checkpoint: ''
 evaluation: false
-headless: false
+headless: true
 enable_livestream: false
 mt_timeout: 300
 enable_recording: false
@@ -179,7 +179,7 @@ train:
       normalize_advantage: true
       gamma: 0.99
       tau: 0.95
-      learning_rate: 0.005
+      learning_rate: 5.0e-05
       lr_schedule: adaptive
       schedule_type: standard
       kl_threshold: 0.008
