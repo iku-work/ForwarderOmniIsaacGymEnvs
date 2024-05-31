@@ -94,7 +94,7 @@ class ForwarderPickTask(RLTask):
         self._num_observations = 56 #41#35
         self._num_actions = 6
         self.num_dof_fwd = 9 
-        self.dt = self._task_cfg["sim"]["dt"] #1/60
+        self.dt = 1/60 #self._task_cfg["sim"]["dt"] #1/60
        
         RLTask.__init__(self, name, env)
         return
@@ -351,8 +351,8 @@ class ForwarderPickTask(RLTask):
         #self.wood_sides = torch.cuda.FloatTensor(num_resets, 1).uniform_() > 0.5
         
         # Swith sides
-        self.wood_sides[indices] = ~self.wood_sides[indices]
-        wood_pos[:,0] += self.wood_sides[indices].flatten() * -9
+        #self.wood_sides[indices] = ~self.wood_sides[indices]
+        wood_pos[:,0] +=  torch.randint(-10, 0, (num_resets, 1), device=self._device).flatten()
 
         #print(self.fwd_dof_targets[indices].shape)
 
@@ -441,7 +441,7 @@ class ForwarderPickTask(RLTask):
 
         self.initial_wood_pos, self.initial_wood_rots = self._woods.get_world_poses(clone=False) 
 
-        self.wood_lifted = torch.zeros((self._num_envs))
+        self.wood_lifted = torch.ones((self._num_envs))
         self.wood_lift_count = torch.zeros_like(self.wood_lifted, device=self._device)
 
 
@@ -458,160 +458,48 @@ class ForwarderPickTask(RLTask):
                             )'''
         self.reset_idx(indices)
 
+    def calculate_distance_reward(self, obj1_pos, obj2_pos):        
+        dist = torch.norm(obj1_pos-obj2_pos, p=2, dim=-1).flatten()
+        return 1 / (1 + dist**2)
+
     def calculate_metrics(self) -> None:
 
+        target_position = self.target_pos
+        # change the z position of the target to be 1.25
+        target_position[:, 2] = 1.25 # this is a real height of the target where the log should be dropped
 
-        # Grapple body's X-axis vector
-        axis1 = tf_vector(self.grapple_body_ori, self.grapple_forward_axis)
-        # Wood Y-axis vector 
-        axis2 = tf_vector(self.wood_ori, self.wood_forward_axis)
-        # Graple body Z-axis vector
-        axis3 = tf_vector(self.grapple_body_ori, self.grapple_up_axis)
-        # Unloading point Z-axis vector
-        axis4 = tf_vector(self.unloading_ori, self.unloading_up_axis)
-        # Unloading point Y-axis vector
-        axis5 = tf_vector(self.unloading_ori, self.unloading_forward_axis)
+        # Get reward for getting grapple close to wood
+        wood_grappler_reward = self.calculate_distance_reward(self.grapple_body_pos, self.wood_pos)
 
-        # Get relative position of grapple and wood
-        # Then calculate if they are on the same side
-        grapple_rel_2_target_pos = self.target_pos - self.grapple_body_pos
-        wood_rel2_target_pos = self.target_pos - self.wood_pos
-        grapple_side = torch.sign(grapple_rel_2_target_pos[:,0])
-        wood_side = torch.sign(wood_rel2_target_pos[:,0])
-        self.side_reward = torch.eq(grapple_side, wood_side, out=None)
+        # Get multiplier for getting grapple close to wood
+        close_to_wood = (wood_grappler_reward > 0.9).float()
 
-        wood_dist_z = torch.abs(self.wood_pos[:,2] - self.grapple_body_pos[:,2])  
+        reward = wood_grappler_reward
 
-        '''
-        # Offset from CM along Y-axis, where grasp allowed
-        wood_grasp_postion_offset = .8
-        wood_pos_grasp = self.wood_pos.clone().to(self._device)
-        #wood_pos_grasp[:,2] += .5
-        self.wood_grasp_positions = wood_pos_grasp.repeat(3,1,1)
-        #self.wood_grasp_positions = self.wood_pos.repeat(3,1,1)
-        self.wood_grasp_positions[0,:,:] += axis2*wood_grasp_postion_offset
-        self.wood_grasp_positions[2,:,:] += -axis2*wood_grasp_postion_offset
-        
-        grapple_body_dist = torch.norm(self.wood_grasp_positions-self.grapple_body_pos.repeat(3,1,1), dim=-1,p=2)
-        grab_reward = 1 / (1 + torch.min(grapple_body_dist, dim=0).values**2)
+        # Add reward for lifting the wood#
+        reward *= 1 + self.wood_pos[:, 2] * close_to_wood * 1e3
 
-        wood_dist_x = torch.abs(self.wood_pos[:,0] - self.grapple_body_pos[:,0])
-        wood_dist_y = torch.abs(self.wood_pos[:,1] - self.grapple_body_pos[:,1])   
-        
-        #print(self.grapple_body_pos[253,2])
-        # Normalize distance
-        grapple_l_dist = torch.norm(self.wood_grasp_positions-self.grapple_l_pos.repeat(3,1,1),dim=-1,p=2)
-        grapple_r_dist = torch.norm(self.wood_grasp_positions-self.grapple_r_pos.repeat(3,1,1),dim=-1,p=2)
-        #grapple_body_dist = torch.norm(self.wood_grasp_positions-self.grapple_body_pos.repeat(3,1,1), dim=-1,p=2)
+        # Set reward for getting close to the target by x-y distance
+        wood_drop_zone_reward = self.calculate_distance_reward(self.wood_pos[:, :2], target_position[:, :2])
 
-        #self.grapple_l_dist_max = torch.max(grapple_l_dist)
-        #self.grapple_r_dist_max = torch.max(grapple_r_dist)
-
-        #self.grapple_l_dist_max = self.grapple_l_dist_max.repeat((512,)).flatten()
-        #self.grapple_r_dist_max = self.grapple_r_dist_max.repeat((512,)).flatten()
-        
-        #grapple_dist_is_close = torch.isclose(torch.min(grapple_l_dist, dim=0).values, torch.min(grapple_r_dist, dim=0).values, 0.1)
-
-        #grapple_l_dist = self.min_max_norm(grapple_l_dist, self.min_dist, self.max_dist)
-        #grapple_r_dist = self.min_max_norm(grapple_r_dist, self.min_dist, self.max_dist)
-        r_b_close = torch.min(grapple_r_dist, dim=0).values < .4
-        l_b_close = torch.min(grapple_l_dist, dim=0).values < .4
-        b_close = torch.min(grapple_body_dist, dim=0).values < .4
-        self.wood_grasped = r_b_close * l_b_close * b_close
-        
-        min_body_2_wood_dist = torch.min(grapple_body_dist,dim=0).values
-
-        grapple_l_rew = 1/(1+(torch.min(grapple_l_dist, dim=0).values)**2)
-        grapple_r_rew = 1/(1+(torch.min(grapple_r_dist, dim=0).values)**2)
-        grapple_body_rew=1/(1+min_body_2_wood_dist**2)
-        '''
-        
-         # Alignment of wood and grapple axes
-        dot1 = torch.bmm(axis1.view(self.num_envs, 1, 3), axis2.view(self.num_envs, 3, 1)).squeeze(-1).squeeze(-1)  # alignment of forward axis for gripper
-        
-        # reward for keeping grapple straight
-        dot2 = torch.bmm(axis3.view(self.num_envs, 1, 3), axis4.view(self.num_envs, 3, 1)).squeeze(-1).squeeze(-1)  # alignment of forward axis for gripper
-
-        # Matching rotation of wood Y-axis to unloading point Y-axis
-        dot3 = torch.bmm(axis2.view(self.num_envs, 1, 3), axis5.view(self.num_envs, 3, 1)).squeeze(-1).squeeze(-1)
-
-        rot_reward_scale = 0.01
-        # reward for matching the orientation of the hand to the drawer (fingers wrapped)
-        rot_to_wood_reward = 1 + torch.abs(dot1) * 0.5 * rot_reward_scale
-        # Grapple closing reward
-
-        #rot_to_z_reward = 1 + torch.abs(dot2) * rot_reward_scale
-
-        rot_yw_yu_reward = 1 + torch.abs(dot3) * rot_reward_scale
-
-        self.dist_gr_2_wood_cm = torch.norm(self.wood_pos-self.grapple_body_pos,dim=-1,p=2)
-
-        #grab_reward = (r_wood_pos_x+r_wood_pos_y +r_wood_pos_z) * 10
-        grab_reward = 1./(1. + self.dist_gr_2_wood_cm**2)
-
-        reward = grab_reward*rot_to_wood_reward * self.grapple_2_wood_dist_scale #+ rot_to_z_reward 
-        reward = torch.where(wood_dist_z==0.5, reward**2, reward)
-
-        #reward += torch.where(min_body_2_wood_dist<.1, reward**2, reward)
-        #grapple_body_rew = torch.exp(-min_body_2_wood_dist)
-
-        #grab_reward = grapple_body_rew 
-        #grab_reward = torch.where(torch.min(grapple_r_dist, dim=0).values<.4, grab_reward+grapple_r_rew, grab_reward)
-        #grab_reward = torch.where(torch.min(grapple_l_dist, dim=0).values<.4, grab_reward+grapple_l_rew, grab_reward)
-        #grab_reward = torch.where(min_body_2_wood_dist<.5, grab_reward**2, grab_reward)
-        #grab_reward = torch.where(min_body_2_wood_dist<.4, grab_reward*2,grab_reward)
-        #grab_reward = 1 / (1+dist_grapple_2_wood_cm**2)
-
-        # Distance from wood CM to Unloading Point
-        self.wood_lifted = (self.wood_pos[:, 2] > 0.25) 
-        self.wood_lift_count += self.wood_lifted
-                
-        v_dist_wood_2_unloading = torch.abs(self.unloading_pos[:,2]-self.wood_pos[:,2]).flatten()
-        v_2_unload_reward = 1 / (1 + v_dist_wood_2_unloading ** 2)
-
-        h_dist_wood_2_unloading = torch.norm(self.unloading_pos[:,:2]-self.wood_pos[:,:2], p=2, dim=-1).flatten()
-        #x_dist_wood_2_unloading = torch.abs(self.unloading_pos[:,0]-self.wood_pos[:,0]).flatten()
-        #x_2_unload_reward = 1.0 / (1.0 + x_dist_wood_2_unloading ** 2)
-        h_2_unload_reward = 1.0 / (1.0 + h_dist_wood_2_unloading ** 2)
-
-        dist_wood_2_unloading = torch.norm(self.unloading_pos-self.wood_pos, p=2, dim=-1)
-        #wood_2_unload_reward = 1 / (1.0 + dist_wood_2_unloading  ** 3) 
-
-        lift_n_unloadDist_reward = self.wood_lifted *  (v_2_unload_reward) * (1+dot3) * self.wood_2_unloading_dist_scale 
-        lift_n_unloadDist_reward = torch.where(v_dist_wood_2_unloading < .5, lift_n_unloadDist_reward, lift_n_unloadDist_reward+h_2_unload_reward*(1+dot3)*self.wood_2_unloading_dist_scale)
-
-        # ==================== new partStage 3
-        wood_2_target_dist = torch.norm(self.target_pos-self.wood_pos, p=2, dim=-1)
-        close_2_unload = torch.where(h_dist_wood_2_unloading < 1, 1, 0)
-        wood_2_target_reward = (1 / (1. + wood_2_target_dist ** 4)) * self.wood_lifted * close_2_unload * rot_yw_yu_reward
-        #print('H close: ', close_2_unload[253].item(), 'W2T reward: ', wood_2_target_reward[253].item()) 
-        # ================== new part ends here
-
-        # Velocity and action penalty for every step to reduce speed / motion jerkiness
-        velocity_penalty = torch.abs(torch.sum(self.grapple_body_vel, dim=-1)) * 1e-3
-        #action_penalty = torch.sum(self.actions ** 2, dim=-1) * 1e-5
-        
+        # Multiplier for getting close to the target
+        close_to_drop_zone = (wood_drop_zone_reward > 0.95).float()
 
 
-        #reward += wood_2_unload_reward * rot_yw_yu_reward
-        #reward -= action_penalty 
-        reward += lift_n_unloadDist_reward
-        #reward += wood_2_target_reward
-        reward -= velocity_penalty
-        #print('Reward {}, Wood lifted count: {}'.format(torch.mean(reward).item(), 
-        #                                                torch.sum(self.wood_lifted).item()))
-        #print('Dist2Unloadrew: {}'.format(wood_2_unload_reward[128]))
-        #print('Lift: {}, target: {}'.format(lift_n_unloadDist_reward[128],wood_2_target_reward[128]))
+        # Add reward for getting close to the target by z distance
+        wood_target_reward =self.calculate_distance_reward(self.wood_pos[:, 2], target_position[:, 2])
 
-        # May be hesitant to move the wood, because side reward is on 
-        # and reward is 0 when it is lifted and grapple on wrong side
-        # Therefore, if wood lifted, side reward is 1
-        self.side_reward = torch.where((self.wood_lifted==1)&(self.side_reward==0),1,self.side_reward)
+        # Add reward for getting close to the drop while having the wood in the grapple
+        reward *= 1 + wood_drop_zone_reward * close_to_drop_zone  *  1e5 * close_to_wood * wood_target_reward 
 
-        reward *= self.side_reward 
+        print('Reward: ', torch.mean(reward), 'Close to wood: ', torch.mean(close_to_wood), 'Close to drop-zone: ', torch.mean(close_to_drop_zone), 'Wood z pos: ', torch.mean(self.wood_pos[:, 2]))
 
+
+        reward -= 0.001
         # Update reward buffer
         self.rew_buf[:] = reward
+        
+
 
     def is_done(self) -> None:
 
@@ -620,19 +508,14 @@ class ForwarderPickTask(RLTask):
 
         # Reset if:
         # On wrong side and more than 50 steps passed
-        resets = torch.where((self.side_reward == 0)&(self.progress_buf > 50),ones,resets)
+        #resets = torch.where((self.side_reward == 0)&(self.progress_buf > 50),ones,resets)
         # If wood was lifted for less 15 steps and half an episode passed
-        resets = torch.where((self.wood_lift_count<15)&(self.progress_buf > self._max_episode_length/2),ones,resets)
+        #resets = torch.where((self.wood_lift_count<15)&(self.progress_buf > self._max_episode_length/2),ones,resets)
         # If max steps reached for episode
         resets = torch.where(self.progress_buf >= self._max_episode_length, ones, resets)
         # Update reset buffer
         self.reset_buf[:] = resets
 
-
-
-    def calculate_distance_reward(self, obj1_pos, obj2_pos):        
-        dist = torch.norm(obj1_pos-obj2_pos, p=2, dim=-1).flatten()
-        return 1 / (1 + dist**2)
 
     def min_max_norm(self, value, min_val, max_val):
         return (value - min_val) / (max_val - min_val)
