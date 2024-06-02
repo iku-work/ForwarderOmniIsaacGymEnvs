@@ -46,13 +46,13 @@ task:
     fwdDofNoise: 0.25
     aggregateMode: 3
     actionScale:
-    - 4
+    - 6
     - 7
-    - 10
-    - 16
-    - 41
-    - 21
-    - 21
+    - 9
+    - 27
+    - 9
+    - 64
+    - 64
     woodLiftScale: 3.5
     grappleToWoodDistScale: 10
     woodToUnloadingPointDistScale: 100
@@ -192,7 +192,7 @@ train:
       entropy_coef: 0.001
       truncate_grads: true
       e_clip: 0.2
-      horizon_length: 128
+      horizon_length: 192
       minibatch_size: 8192
       mini_epochs: 8
       critic_coef: 3

@@ -119,7 +119,7 @@ class ForwarderPickTask(RLTask):
         scene.add(self._woods)
 
         self.fwd_default_dof_pos = torch.tensor(
-                        [0, -0.349066, -0.436332, -2.239, .2, 0.035, 0.035], device=self._device
+                        [0, -0.349066, -0.436332, 0, .2, 0.035, 0.035], device=self._device
         )
         self.active_joints = torch.tensor([0,1,2,3,6,7,8], device=self._device)
         self.action_scale = torch.tensor(self.action_scale, device=self._device)
@@ -358,8 +358,6 @@ class ForwarderPickTask(RLTask):
         #self.wood_sides[indices] = ~self.wood_sides[indices]
         wood_pos[:,0] +=  torch.randint(-100, 0, (num_resets, 1), device=self._device).flatten() / 10
 
-        
-
         #print(self.fwd_dof_targets[indices].shape)
 
         #initial_wood_pos = self.initial_wood_pos.clone()
@@ -373,7 +371,7 @@ class ForwarderPickTask(RLTask):
 
         wood_rot_euler = torch.zeros((num_resets, 3), device=self._device)
         wood_rot_euler[:, 2] = rand_angle.squeeze()
-        wood_rot_euler = torch.tensor([0.0,1.58,0.0], device=self._device).clone().repeat((num_resets,1))
+        #wood_rot_euler = torch.tensor([0.0,1.58,0.0], device=self._device).clone().repeat((num_resets,1))
         wood_rot = axisangle2quat(wood_rot_euler)
         wood_velocities = torch.zeros((num_resets, 6), device=self._device)
 
@@ -386,11 +384,8 @@ class ForwarderPickTask(RLTask):
         #(a - b)*torch.rand(5, 3) + b
 
         # Randomize pos of all active joints
-        #self.fwd_dof_targets[indices_64] = (self.active_dof_lower_limits - self.active_dof_upper_limits) *torch.rand_like(self.fwd_dof_targets[indices_64]) + self.active_dof_upper_limits
+        self.fwd_dof_targets[indices_64] = (self.active_dof_lower_limits - self.active_dof_upper_limits) *torch.rand_like(self.fwd_dof_targets[indices_64]) + self.active_dof_upper_limits
         
-        #print('Active limits: ', self.active_dof_upper_limits)
-        #print('TARGETS ', self.fwd_dof_targets[253,:])
-        #print(self.active_dof_lower_limits[0], self.active_dof_upper_limits[0])
 
         #self.fwd_dof_targets[indices_64, 0] = torch_rand_float(-self.active_dof_lower_limits[0], 
         #                                                       self.active_dof_upper_limits[0], 
@@ -484,6 +479,7 @@ class ForwarderPickTask(RLTask):
 
         reward = wood_grappler_reward
 
+        
         # Set reward for getting close to the target by x-y distance
         wood_drop_zone_reward = self.calculate_distance_reward(self.wood_pos[:, :2], target_position[:, :2])
 
@@ -511,8 +507,8 @@ class ForwarderPickTask(RLTask):
         # Add reward for leaving the wood at the target and lifting the grapple after delivery
         reward *= 1 +  self.grapple_body_pos[:, 2] * 1e2 * close_to_target * self.delivered
 
-        print('Reward: ', torch.mean(reward).item(), 'Close to wood: ', torch.mean(close_to_wood).item(), 'Close to drop-zone: ', torch.mean(close_to_drop_zone).item(), 
-              'Close to target: ', torch.mean(close_to_target).item(), 'Wood z pos: ', torch.mean(self.wood_pos[:, 2]).item(), 'Grapple z pos: ', torch.mean(self.grapple_body_pos[:, 2]).item(), 'Delivered: ', torch.mean(self.delivered).item())
+        #print('Reward: ', torch.mean(reward).item(), 'Close to wood: ', torch.mean(close_to_wood).item(), 'Close to drop-zone: ', torch.mean(close_to_drop_zone).item(), 
+        #      'Close to target: ', torch.mean(close_to_target).item(), 'Wood z pos: ', torch.mean(self.wood_pos[:, 2]).item(), 'Grapple z pos: ', torch.mean(self.grapple_body_pos[:, 2]).item(), 'Delivered: ', torch.mean(self.delivered).item())
 
 
         reward -= 0.01
