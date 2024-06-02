@@ -19,6 +19,8 @@ import numpy as np
 import torch
 import math
 
+# set printing options to print only 3 decimal places
+np.set_printoptions(precision=3, suppress=True)
 
 from omni.isaac.core.utils.prims import get_all_matching_child_prims
 
@@ -342,6 +344,8 @@ class ForwarderPickTask(RLTask):
         wood_dirs = torch_random_dir_2((num_resets, 1), self._device)
         hpos = dists * wood_dirs
 
+
+
         wood_pos = self.initial_wood_pos[indices_64, :].clone().to(self._device)
         # Randomizing wood position
         wood_rot = self.initial_wood_rots.clone()
@@ -352,7 +356,9 @@ class ForwarderPickTask(RLTask):
         
         # Swith sides
         #self.wood_sides[indices] = ~self.wood_sides[indices]
-        wood_pos[:,0] +=  torch.randint(-10, 0, (num_resets, 1), device=self._device).flatten()
+        wood_pos[:,0] +=  torch.randint(-100, 0, (num_resets, 1), device=self._device).flatten() / 10
+
+        
 
         #print(self.fwd_dof_targets[indices].shape)
 
@@ -411,6 +417,8 @@ class ForwarderPickTask(RLTask):
         self.unloading_pos, self.unloading_ori = self._fwds.unloading_point.get_world_poses(clone=False)
         self.target_pos, _ = self._fwds.targets.get_world_poses(clone=False)
 
+        #set the tracker for wood delivery
+        self.delivered = torch.zeros((self._num_envs), device=self._device)
 
         #self.side_reward = torch.ones((512,1), device=self._device).flatten()
         # bookkeeping
@@ -476,26 +484,38 @@ class ForwarderPickTask(RLTask):
 
         reward = wood_grappler_reward
 
-        # Add reward for lifting the wood#
-        reward *= 1 + self.wood_pos[:, 2] * close_to_wood * 1e3
-
         # Set reward for getting close to the target by x-y distance
         wood_drop_zone_reward = self.calculate_distance_reward(self.wood_pos[:, :2], target_position[:, :2])
 
         # Multiplier for getting close to the target
         close_to_drop_zone = (wood_drop_zone_reward > 0.95).float()
 
+        # Add reward for lifting the wood#
+        reward *= 1 + wood_drop_zone_reward * close_to_wood * 1e3
 
-        # Add reward for getting close to the target by z distance
-        wood_target_reward =self.calculate_distance_reward(self.wood_pos[:, 2], target_position[:, 2])
+        # Add reward for getting close to the target by z
+        wood_target_reward = 1 / (1 + (self.wood_pos[:, 2] - target_position[:, 2])**2)
+        #wood_target_reward = self.calculate_distance_reward(self.wood_pos, target_position)
 
-        # Add reward for getting close to the drop while having the wood in the grapple
-        reward *= 1 + wood_drop_zone_reward * close_to_drop_zone  *  1e5 * close_to_wood * wood_target_reward 
+        # Add close to target multiplier
+        close_to_target = (wood_target_reward > 0.9).float()
 
-        print('Reward: ', torch.mean(reward), 'Close to wood: ', torch.mean(close_to_wood), 'Close to drop-zone: ', torch.mean(close_to_drop_zone), 'Wood z pos: ', torch.mean(self.wood_pos[:, 2]))
+        # Add reward for getting close to the target
+        reward *= 1 + wood_target_reward * close_to_drop_zone  *  1e5 * close_to_wood
+
+        delivered_condition =  (wood_drop_zone_reward > 0.95) * (wood_target_reward > 0.9) * (wood_grappler_reward > 0.9)
+
+        # Update delivered status
+        self.delivered[delivered_condition] = 1
+
+        # Add reward for leaving the wood at the target and lifting the grapple after delivery
+        reward *= 1 +  self.grapple_body_pos[:, 2] * 1e2 * close_to_target * self.delivered
+
+        print('Reward: ', torch.mean(reward).item(), 'Close to wood: ', torch.mean(close_to_wood).item(), 'Close to drop-zone: ', torch.mean(close_to_drop_zone).item(), 
+              'Close to target: ', torch.mean(close_to_target).item(), 'Wood z pos: ', torch.mean(self.wood_pos[:, 2]).item(), 'Grapple z pos: ', torch.mean(self.grapple_body_pos[:, 2]).item(), 'Delivered: ', torch.mean(self.delivered).item())
 
 
-        reward -= 0.001
+        reward -= 0.01
         # Update reward buffer
         self.rew_buf[:] = reward
         

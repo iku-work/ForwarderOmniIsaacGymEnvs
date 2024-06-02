@@ -29,7 +29,8 @@ env:
 
 #'r0_scale': 11, 'r1_scale': 6, 'r2_scale': 13, 'l_scale': 20, 'r3_scale': 56, 'r4_scale': 74
   #actionScale: [11, 6, 13, 20, 56, 74, 74]
-  actionScale: [4, 7, 10, 16, 41, 21, 21]
+  #actionScale: [4, 7, 10, 16, 41, 21, 21]
+  actionScale: [6,7,9,27,9,64,64]
   woodLiftScale: 3.5
   grappleToWoodDistScale: 10
   woodToUnloadingPointDistScale: 100
@@ -90,7 +91,7 @@ sim:
     override_usd_defaults: True
     enable_self_collisions: False
     enable_gyroscopic_forces: True
-  #  # also in stage params
+  #  # also in stage params#
   #  # per-actor
     solver_position_iteration_count: 12
     solver_velocity_iteration_count: 1

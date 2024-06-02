@@ -12,10 +12,10 @@ rl_device: cuda:0
 multi_gpu: false
 num_threads: 4
 solver_type: 1
-test: false
-checkpoint: ''
+test: true
+checkpoint: /home/rl/ForwarderOmniIsaacGymEnvs/omniisaacgymenvs/runs/ForwarderPick/nn/ForwarderPick.pth
 evaluation: false
-headless: true
+headless: false
 enable_livestream: false
 mt_timeout: 300
 enable_recording: false
@@ -155,7 +155,7 @@ train:
         - 256
         - 256
         - 128
-        activation: elu
+        activation: tanh
         d2rl: false
         initializer:
           name: default
@@ -169,7 +169,7 @@ train:
       env_name: rlgpu
       multi_gpu: ${....multi_gpu}
       ppo: true
-      mixed_precision: false
+      mixed_precision: true
       normalize_input: true
       normalize_value: true
       value_bootstrap: true
@@ -179,23 +179,23 @@ train:
       normalize_advantage: true
       gamma: 0.99
       tau: 0.95
-      learning_rate: 5.0e-05
+      learning_rate: 0.0005
       lr_schedule: adaptive
       schedule_type: standard
       kl_threshold: 0.008
-      score_to_win: 10000000000.0
-      max_epochs: ${resolve_default:10000,${....max_iterations}}
-      save_best_after: 200
+      score_to_win: 1.0e+21
+      max_epochs: ${resolve_default:5000,${....max_iterations}}
+      save_best_after: 10
       save_frequency: 100
       print_stats: true
       grad_norm: 1.0
       entropy_coef: 0.001
       truncate_grads: true
       e_clip: 0.2
-      horizon_length: 32
+      horizon_length: 256
       minibatch_size: 8192
       mini_epochs: 8
-      critic_coef: 2
+      critic_coef: 3
       clip_value: true
       seq_len: 4
       bounds_loss_coef: 0.0001
