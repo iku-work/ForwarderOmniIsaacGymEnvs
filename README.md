@@ -1,4 +1,7 @@
 # Copy of Omni Isaac Gym Environments repo with added Forestry Forwarder example
+
+<img src="https://github.com/iku-work/ForwarderOmniIsaacGymEnvs/blob/main/data/fwd.gif?raw=true" width="300" height="150">
+
 >[!Note]
 >This repository uses deprecated version of the Isaac Sim 2023.1.1.
 >It will be converted to the latest version as soon as possible.
