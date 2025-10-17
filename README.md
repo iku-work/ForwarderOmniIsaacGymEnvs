@@ -1,8 +1,18 @@
+# Copy of Omni Isaac Gym Environments repo with added Forestry Forwarder example
+>[!Note]
+>This repository uses deprecated version of the Isaac Sim 2023.1.1.
+>It will be converted to the latest version as soon as possible.
+
+Example usage of the pre-trained models:
+```bash
+PYTHON_PATH scripts/rlgames_train.py task=ForwarderPick num_envs=1024 checkpoint=runs/ForwarderPickReady/exp2/nn/exp2.pth test=True headless=False test=True
+``` 
+
 # Omniverse Isaac Gym Reinforcement Learning Environments for Isaac Sim
 
 ## About this repository
 
-This repository contains Reinforcement Learning examples that can be run with the latest release of [Isaac Sim](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html). RL examples are trained using PPO from [rl_games](https://github.com/Denys88/rl_games) library and examples are built on top of Isaac Sim's `omni.isaac.core` and `omni.isaac.gym` frameworks.
+This repository contains Reinforcement Learning examples that can be run with an old release of [Isaac Sim](https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html). RL examples are trained using PPO from [rl_games](https://github.com/Denys88/rl_games) library and examples are built on top of Isaac Sim's `omni.isaac.core` and `omni.isaac.gym` frameworks.
 
 Please see [release notes](docs/release_notes.md) for the latest updates.
 
