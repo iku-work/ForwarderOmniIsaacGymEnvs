@@ -21,10 +21,8 @@ params:
           val: 0
         fixed_sigma: True
     mlp:
-      #units: [512, 128, 64]
-      units: [256, 256, 128]
-      #units: [512,256,128]
-      activation: tanh #elu #tanh #arctan
+      units: [256, 256,64]
+      activation: tanh 
       d2rl: False
 
       initializer:
@@ -32,12 +30,12 @@ params:
       regularizer:
         name: None
 
-      #rnn:
-      #  name: lstm
-      #  units: 256
-      #  layers: 1
-      #  before_mlp: True
-      #  layer_norm: True
+      rnn:
+        name: lstm
+        units: 32
+        layers: 1
+        before_mlp: False
+        layer_norm: True
 
   load_checkpoint: ${if:${...checkpoint},True,False} # flag which sets whether to load the checkpoint
   load_path: ${...checkpoint} # path to the checkpoint to load
@@ -48,31 +46,31 @@ params:
     env_name: rlgpu
     multi_gpu: ${....multi_gpu}
     ppo: True
-    mixed_precision: True
+    mixed_precision: False
     normalize_input: True
     normalize_value: True
     value_bootstrap: True
     num_actors: ${....task.env.numEnvs}
     reward_shaper:
-      scale_value: 1 #1.0 .1 .01 .001
+      scale_value: 1 
     normalize_advantage: True
-    gamma: 0.99
+    gamma: 0.98
     tau: 0.95
     learning_rate: 5e-4
-    lr_schedule: adaptive
+    lr_schedule: fixed
     schedule_type: standard
-    kl_threshold:  0.008         #0.008
+    kl_threshold:  0.008
     score_to_win: 1e21
-    max_epochs: ${resolve_default:5000,${....max_iterations}}
-    save_best_after: 10
+    max_epochs: ${resolve_default:700,${....max_iterations}}
+    save_best_after: 1 
     save_frequency: 100
     print_stats: True
     grad_norm: 1.0
-    entropy_coef: 0.001 #0.0 # 1e-6 #0.0 # 1e-6 #0.00001 #0.0 #  # 0.0000001 # # # #
+    entropy_coef: 0.001 
     truncate_grads:  True
     e_clip: 0.2
-    horizon_length: 192       #32 #16   #64
-    minibatch_size: 8192          #8192 #32768 # 16384 #
+    horizon_length: 128  
+    minibatch_size: 2048  
     mini_epochs: 8
     critic_coef: 3
     clip_value: True

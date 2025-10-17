@@ -1,6 +1,6 @@
 task_name: ${task.name}
 experiment: ''
-num_envs: 512
+num_envs: 1024
 seed: 42
 torch_deterministic: false
 max_iterations: ''
@@ -13,7 +13,7 @@ multi_gpu: false
 num_threads: 4
 solver_type: 1
 test: true
-checkpoint: /home/rl/ForwarderOmniIsaacGymEnvs/omniisaacgymenvs/runs/ForwarderPick/nn/ForwarderPick.pth
+checkpoint: /home/rl/ForwarderOmniIsaacGymEnvs/omniisaacgymenvs/runs/ForwarderPickReady/exp2/nn/exp2.pth
 evaluation: false
 headless: false
 enable_livestream: false
@@ -34,53 +34,21 @@ task:
   name: ForwarderPick
   physics_engine: ${..physics_engine}
   env:
-    numEnvs: ${resolve_default:1024,${...num_envs}}
-    envSpacing: 20
+    numEnvs: ${resolve_default:4096,${...num_envs}}
+    envSpacing: 30
     episodeLength: 300
     enableDebugVis: false
     controlFrequencyInv: 3
-    startPositionNoise: 0.25
-    startRotationNoise: 0.785
-    fwdPositionNoise: 0.0
-    fwdRotationNoise: 0.0
-    fwdDofNoise: 0.25
-    aggregateMode: 3
     actionScale:
-    - 4
+    - 6
     - 7
-    - 10
-    - 16
-    - 41
-    - 21
-    - 21
-    woodLiftScale: 3.5
-    grappleToWoodDistScale: 10
-    woodToUnloadingPointDistScale: 100
-    woodToTargetDistScale: 20
-    kps:
-    - 5000000.0
-    - 5000000.0
-    - 5000000.0
-    - 5000000.0
-    - 5000000.0
-    - 5000000.0
-    - 5000000.0
-    kds:
-    - 0
-    - 0
-    - 0
-    - 0
-    - 0
-    - 0
-    - 0
-    force:
-    - 100000.0
-    - 100000.0
-    - 100000.0
-    - 100000.0
-    - 100000.0
-    - 100000.0
-    - 100000.0
+    - 9
+    - 27
+    - 9
+    - 64
+    - 64
+    reward_scale: 10
+    train_step: 1
     asset:
       assetRoot: ../../assets
       assetFileNameFranka: urdf/forwarder_description/forwarder.urdf
@@ -121,7 +89,7 @@ task:
       gpu_temp_buffer_capacity: 16777216
       gpu_max_num_partitions: 8
     forwarder:
-      override_usd_defaults: true
+      override_usd_defaults: false
       enable_self_collisions: false
       enable_gyroscopic_forces: true
       solver_position_iteration_count: 12
@@ -154,13 +122,19 @@ train:
         units:
         - 256
         - 256
-        - 128
+        - 64
         activation: tanh
         d2rl: false
         initializer:
           name: default
         regularizer:
           name: None
+        rnn:
+          name: lstm
+          units: 32
+          layers: 1
+          before_mlp: false
+          layer_norm: true
     load_checkpoint: ${if:${...checkpoint},True,False}
     load_path: ${...checkpoint}
     config:
@@ -169,7 +143,7 @@ train:
       env_name: rlgpu
       multi_gpu: ${....multi_gpu}
       ppo: true
-      mixed_precision: true
+      mixed_precision: false
       normalize_input: true
       normalize_value: true
       value_bootstrap: true
@@ -177,23 +151,23 @@ train:
       reward_shaper:
         scale_value: 1
       normalize_advantage: true
-      gamma: 0.99
+      gamma: 0.98
       tau: 0.95
       learning_rate: 0.0005
-      lr_schedule: adaptive
+      lr_schedule: fixed
       schedule_type: standard
       kl_threshold: 0.008
       score_to_win: 1.0e+21
-      max_epochs: ${resolve_default:5000,${....max_iterations}}
-      save_best_after: 10
+      max_epochs: ${resolve_default:700,${....max_iterations}}
+      save_best_after: 1
       save_frequency: 100
       print_stats: true
       grad_norm: 1.0
       entropy_coef: 0.001
       truncate_grads: true
       e_clip: 0.2
-      horizon_length: 256
-      minibatch_size: 8192
+      horizon_length: 128
+      minibatch_size: 2048
       mini_epochs: 8
       critic_coef: 3
       clip_value: true
